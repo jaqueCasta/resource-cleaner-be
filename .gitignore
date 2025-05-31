@@ -10,7 +10,7 @@ yarn-error.log*
 .env
 
 # Reportes JSON generados
-report_*.json
+reports/
 
 # Dependency directories
 jspm_packages/

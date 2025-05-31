@@ -1,11 +1,9 @@
-require('dotenv').config();
-const PROJECT_ID = process.env.PROJECT_ID;
 const { AssetServiceClient } = require('@google-cloud/asset');
 const client = new AssetServiceClient();
 const { google } = require('googleapis');
 const axios = require('axios');
 
-
+ //Verificar uso de Instancia en los ultimos 30 dìas
 async function VMInactive(projectId, vmInstance){
   const auth = await google.auth.getClient({
     scopes: ['https://www.googleapis.com/auth/cloud-platform'],
@@ -16,13 +14,12 @@ async function VMInactive(projectId, vmInstance){
   const request = {
     scope: `projects/${projectId}`,
     query: '', 
-    assetTypes: ['compute.googleapis.com/Instance'], 
-    pageSize: 1000,  
+    assetTypes: ['compute.googleapis.com/Instance'],
   };
   try {
     const [response] = await client.searchAllResources(request);
     const vm = (response || []).find(v => v.displayName === vmInstance);
-    const instanceID =  vm.additionalAttributes.fields?.id?.stringValue;
+    const instanceID =  vm.additionalAttributes?.fields?.id?.stringValue;
 
     if (!vm) {
       console.log(`VM ${vmInstance} no encontrada`);
@@ -64,18 +61,17 @@ async function VMInactive(projectId, vmInstance){
     }
     return true;
   } catch (err) {
-    console.error("Error al obtener las Discos desde Asset Inventory:", err.message);
+    console.error("Error al obtener las Instancias inactivas en el projecto :", projectId, "en la instancia: ",vmInstance);
     return false;
   }
 }
 
 
-async function fetchVMs(){
+async function fetchVMs(PROJECT_ID){
     const request = {
         scope: `projects/${PROJECT_ID}`,
         query: '', 
-        assetTypes: ['compute.googleapis.com/Instance'], 
-        pageSize: 1000,  
+        assetTypes: ['compute.googleapis.com/Instance'],
     };
     
     try {
@@ -84,27 +80,27 @@ async function fetchVMs(){
         const vmsInfo = [];
 
         for (const vm of (response || [])) {
-
             const criteriosViolados = [];
-            
+
             if(await VMInactive(PROJECT_ID, vm.displayName )){
                 criteriosViolados.push("Instancia sin uso en los ultimos 30 dias");
                 vmsInfo.push({
                     recurso: "Instancia",
                     nombre: vm.displayName,
                     proyecto: PROJECT_ID, 
-                    locacion: vm.location,
+                    link: `https://console.cloud.google.com/compute/instancesDetail/zones/${vm.location}/instances/${vm.displayName}?project=${PROJECT_ID}`,
+                    region: vm.location,
                     estado: vm.state,
                     criteriosViolados,
+                    score: 1,
                 });    
-
             }
         }
         
         return vmsInfo;
 
     } catch (err) {
-        console.error("Error al obtener los Discos desde Asset Inventory:", err.message);
+        console.error("Error al obtener los Instancias en el projecto :", PROJECT_ID, err.message);
         return [];
     }
 }

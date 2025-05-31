@@ -1,16 +1,13 @@
-require('dotenv').config();
-const PROJECT_ID = process.env.PROJECT_ID;
 const { AssetServiceClient } = require('@google-cloud/asset');
 const client = new AssetServiceClient();
 const { google } = require('googleapis');
 const compute = google.compute('v1');
 
-async function getAllIps() {
+async function getAllIps(PROJECT_ID) {
   const request = {
     scope: `projects/${PROJECT_ID}`,
     query: '', 
     assetTypes: ['compute.googleapis.com/Address'], 
-    pageSize: 1000, 
   };
 
   try {
@@ -28,7 +25,7 @@ async function getAllIps() {
     return ipsInfo;
 
   } catch (err) {
-    console.error("Error al obtener las IPs desde Asset Inventory:", err.message);
+    console.error("Error al obtener las IPs en el projecto :", PROJECT_ID, err.message);
     return [];
   }
 }
@@ -57,17 +54,18 @@ async function getIpDetails(projectId, region, addressName) {
   return res.data 
 }
 
-async function fetchIPs() {
+async function fetchIPs(PROJECT_ID) {
 
   const ips = await getAllIps(PROJECT_ID);
 
   const results = [];
-  const criteriosViolados = [];
+  
   for (const ip of ips) {
     const parts = ip.name.split('/');
     const regionIndex = parts.indexOf('regions');
     const globalIndex = parts.indexOf('global');
-    
+    const criteriosViolados = [];
+
     let region = '';
     let addressName = '';
 
@@ -87,18 +85,21 @@ async function fetchIPs() {
       
       if (details.status === 'RESERVED' && (!details.purpose || details.purpose.length === 0)) {
         criteriosViolados.push("IP sin uso");
+        
         results.push({
           recurso:'IP',
-          id: ip.name,
           nombre: ip.id,
+          proyecto: PROJECT_ID,
           ip : details.address,
+          link: `https://console.cloud.google.com/networking/addresses/list?project=${PROJECT_ID}`,
           region,
           estado: details.status,
-          criteriosViolados
+          criteriosViolados,
+          score: 1
         });
       }
     } catch (err) {
-      console.error(`Error al obtener detalles para IP ${ip.displayName}:`, err.message);
+      console.error(`Error al obtener detalles para IP ${ip.displayName} en el proyecto ${PROJECT_ID} :`, err.message);
     }
   }
 
