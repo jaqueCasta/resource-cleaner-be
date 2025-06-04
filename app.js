@@ -21,9 +21,9 @@ const { sendGoogleChatAlert } = require('./services/webhookChat.js');
 
   const projects = res.data.projects || [];
 
-  const whitelist = ["opt-test-438021","tracker-fleet-prod"];//,"shared-resources-418617"];
+ // const whitelist = ["opt-test-438021","tracker-fleet-prod"];//,"shared-resources-418617"];
   
-  /*const whitelist = ["ubicaserv","camaras-be","camaras-smx","shared-resources-418617", 
+  const whitelist = ["ubicaserv","camaras-be","camaras-smx","shared-resources-418617", 
     "dev-projects-265715","data-bi-254516","mm-trackig-fleet","mm-gateway","tracking-hk",
     "metricams-dev","traxion-249315","tracking-arca","metrimoto","pmf-security-dev","networking-metrica",
     "iris-prod-448716","administracion-mm","idealease-431218","pmf-security-prod","tracking-elglobo",
@@ -32,11 +32,12 @@ const { sendGoogleChatAlert } = require('./services/webhookChat.js');
     "lookermetrica","tracking-kof","labs-459015","aforos","apigee-metrica","shared-resources-dev-420022",
     "proyectos-441904","plataforma-mb","pmf-backup-data","cybersecurity-tools-418423","tracking-fleet-mexico",
     "mm-billing","instalit-dev","reportgps-dev","analytics-helpdesk","instalit-prod"
-  ];*/
-  for (const project of projects) {
-    if (whitelist.includes(project.projectId)) {
-      await analyzer(project.projectId);
-    }
+  ];
+  
+
+  for(const project of whitelist )
+  {
+     await analyzer(project);
   }
 
   await sendGoogleChatAlert();

@@ -27,3 +27,5 @@ jspm_packages/
 # OS-specific files
 .DS_Store
 Thumbs.db
+
+GCP_CREDS.json
