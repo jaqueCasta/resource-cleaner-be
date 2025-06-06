@@ -3,7 +3,6 @@ const client = new AssetServiceClient();
 const { google } = require('googleapis');
 const compute = google.compute('v1');
 
-
 async function fetchSnapshots(PROJECT_ID) {
   const auth = await google.auth.getClient({
     scopes: ['https://www.googleapis.com/auth/cloud-platform'],
@@ -87,9 +86,14 @@ async function fetchSnapshots(PROJECT_ID) {
 
     return snapshotInfo;
   } catch (err) {
+    if (err.message.includes('Compute Engine API has not been used in project')) {
+      console.error('Compute Engine API no habilitada');
+      return 'Compute Engine API no habilitada';
+    }
+
     console.error("Error al obtener snapshots en el projecto :", PROJECT_ID, err.message);
     return [];
   }
 }
 
-module.exports = { fetchSnapshots }
+module.exports = {  fetchSnapshots }
