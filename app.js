@@ -1,7 +1,7 @@
 const { fetchVMs } = require('./services/vm.js');
 const { fetchIPs } = require('./services/ips.js');
 const { fetchDisks } = require('./services/disks.js');
-const { generateJSONReport } = require('./reportGenerator');
+const { generateCSVReport } = require('./reportGenerator');
 const { fetchSnapshots } = require('./services/snapshots.js');
 const { sendGoogleChatAlert } = require('./services/webhookChat.js');
 
@@ -47,5 +47,5 @@ async function analyzer(PROJECT_ID){
   
   const resources = [...ips, ...disks, ...snapshots, ...vms];
   
-  generateJSONReport(resources, PROJECT_ID);
+  generateCSVReport(resources, PROJECT_ID);
 }

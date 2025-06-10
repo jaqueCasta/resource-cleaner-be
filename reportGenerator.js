@@ -1,32 +1,40 @@
-const { Storage } = require('@google-cloud/storage');
+const { parse } = require('json2csv');
 require('dotenv').config();
+const { Storage } = require('@google-cloud/storage');
 const storage = new Storage();
-const BUCKET_NAME = process.env.REPORTS_BUCKET; 
+const BUCKET_NAME = process.env.REPORTS_BUCKET;
 
-async function generateJSONReport(data, PROJECT_ID) {
-  const filename = `${PROJECT_ID}_report.json`;
+async function generateCSVReport(data, PROJECT_ID) {
+  const filename = `${PROJECT_ID}_report.csv`;
+
+  const normalizedData = data.map(item => ({
+    recurso: item.recurso || '',
+    nombre: item.nombre || '',
+    proyecto: item.proyecto || '',
+    ip: item.ip || '',
+    link: item.link || '',
+    region: item.region || '',
+    estado: item.estado || '',
+    uso: item.uso || '',
+    criteriosViolados: item.criteriosViolados ? item.criteriosViolados.join('; ') : '',
+    score: item.score || ''
+  }));
+
+  const csvData = parse(normalizedData, {
+    delimiter: ',', 
+    fields: [
+      'recurso', 'nombre', 'proyecto', 'ip', 'link', 'region', 'estado', 'uso', 'criteriosViolados', 'score'
+    ]
+  });
+
   const bucket = storage.bucket(BUCKET_NAME);
   const file = bucket.file(filename);
 
-  
-  await file.save(JSON.stringify(data, null, 2), {
-    contentType: 'application/json',
+  await file.save(csvData, {
+    contentType: 'text/csv', 
   });
 
-  console.log(`Reporte guardado y actualizado en gs://${BUCKET_NAME}/${filename}`);
+  console.log(`Reporte CSV guardado en el bucket gs://${BUCKET_NAME}/${filename}`);
 }
 
-module.exports = { generateJSONReport };
-
-
-
-/*const fs = require('fs');
-
-function generateJSONReport(data, PROJECT_ID) {
-  const filename = `./reports/${PROJECT_ID}_report.json`;
-  fs.writeFileSync(filename, JSON.stringify(data, null, 2));
-  
-  console.log(`Reporte guardado como: ${filename}`);
-}
-
-module.exports = { generateJSONReport };*/
+module.exports = { generateCSVReport };
