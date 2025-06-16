@@ -2,6 +2,7 @@ require('dotenv').config();
 const axios = require('axios');
 const GOOGLE_CHAT_WEBHOOK_URL = process.env.GOOGLE_CHAT_WEBHOOK_URL;
 const REPORTS_BUCKET = process.env.REPORTS_BUCKET;
+
 async function sendGoogleChatAlert() {
   if (!GOOGLE_CHAT_WEBHOOK_URL) {
     console.warn('No se ha configurado GOOGLE_CHAT_WEBHOOK_URL, no se enviará alerta');

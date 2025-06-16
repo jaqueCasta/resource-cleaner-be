@@ -4,7 +4,6 @@ const { google } = require('googleapis');
 const compute = google.compute('v1');
 const { VMInactive } = require('./vm.js');
 
-
 async function fetchDisks(PROJECT_ID) {
 
   const request = {
@@ -72,6 +71,10 @@ async function fetchDisks(PROJECT_ID) {
     return disksInfo;
 
   } catch (err) {
+    if (err.message.includes('Compute Engine API has not been used in project')) {
+      console.error('Compute Engine API no habilitada');
+      return 'Compute Engine API no habilitada';
+    }
     console.error("Error al obtener los Discos en el projecto :", PROJECT_ID, err.message);
     return [];
   }

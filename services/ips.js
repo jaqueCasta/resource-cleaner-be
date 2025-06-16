@@ -55,7 +55,7 @@ async function getIpDetails(projectId, region, addressName) {
 }
 
 async function fetchIPs(PROJECT_ID) {
-
+  
   const ips = await getAllIps(PROJECT_ID);
 
   const results = [];
@@ -99,6 +99,10 @@ async function fetchIPs(PROJECT_ID) {
         });
       }
     } catch (err) {
+      if (err.message.includes('Compute Engine API has not been used in project')) {
+        console.error('Compute Engine API no habilitada');
+        return 'Compute Engine API no habilitada';
+      }
       console.error(`Error al obtener detalles para IP ${ip.displayName} en el proyecto ${PROJECT_ID} :`, err.message);
     }
   }
